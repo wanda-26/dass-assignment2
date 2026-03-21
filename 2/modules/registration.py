@@ -1,11 +1,11 @@
 """
 Registration Module
 Registers new crew members.
-All member data lives here — role, skill level and availability
-are updated later by the Crew Management module.
+Role defaults to 'unassigned' and skill_level to None.
+Both are updated later by the Crew Management module.
 """
 
-# In-memory store: {member_id: {"id": int, "name": str, "role": str, "skill_level": int|None, "available": bool}}
+# In-memory store: {member_id: {"id": int, "name": str, "role": str, "skill_level": int|None}}
 _registry: dict = {}
 _id_counter: list = [1]
 
@@ -27,7 +27,6 @@ def register_member(name: str) -> dict:
         "name": name,
         "role": "unassigned",
         "skill_level": None,
-        "available": True,
     }
     _registry[mid] = record
     return dict(record)
@@ -62,13 +61,6 @@ def update_skill_level(member_id: int, skill_level: int) -> None:
     if member_id not in _registry:
         raise KeyError(f"No member with ID {member_id}.")
     _registry[member_id]["skill_level"] = skill_level
-
-
-def update_availability(member_id: int, available: bool) -> None:
-    """Update a member's availability — called by crew management."""
-    if member_id not in _registry:
-        raise KeyError(f"No member with ID {member_id}.")
-    _registry[member_id]["available"] = available
 
 
 def remove_member(member_id: int) -> None:
