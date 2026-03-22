@@ -4,11 +4,12 @@ Creates missions and assigns crew members to them.
 Validates that required roles exist in the crew before a mission can start.
 Business rules:
   - Mission cannot start if no crew member with the required role exists.
+  - A repair mission requires at least one damaged car in inventory.
   - Each mission type has a set of required roles.
-Depends on: crew_management, registration.
+Depends on: crew_management, registration, inventory.
 """
 
-from modules import crew_management, registration
+from modules import crew_management, registration, inventory
 
 # Mission type → list of required roles
 MISSION_REQUIREMENTS = {
@@ -19,8 +20,6 @@ MISSION_REQUIREMENTS = {
     "heist":    ["driver", "strategist"],
 }
 
-# {mission_id: {"id": int, "type": str, "description": str,
-#               "required_roles": list, "assigned_crew": list, "status": str}}
 _missions: dict = {}
 _mission_id_counter: list = [1]
 
@@ -32,10 +31,7 @@ def _next_mission_id() -> int:
 
 
 def create_mission(mission_type: str, description: str) -> dict:
-    """
-    Create a new mission of the given type.
-    Raises ValueError if mission type is not recognised.
-    """
+    """Create a new mission of the given type."""
     mission_type = mission_type.strip().lower()
     if mission_type not in MISSION_REQUIREMENTS:
         raise ValueError(
@@ -59,7 +55,6 @@ def assign_crew(mission_id: int, member_ids: list) -> dict:
     """
     Assign crew members to a mission.
     Validates that the assigned crew collectively covers all required roles.
-    Raises ValueError if roles are not covered.
     """
     if mission_id not in _missions:
         raise KeyError(f"No mission with ID {mission_id}.")
@@ -102,7 +97,10 @@ def assign_crew(mission_id: int, member_ids: list) -> dict:
 def start_mission(mission_id: int) -> dict:
     """
     Start a mission.
-    Validates that required roles exist in the crew before starting.
+    Validates:
+      - Crew is assigned.
+      - All required roles exist in the crew.
+      - For repair missions: at least one damaged car must exist in inventory.
     """
     if mission_id not in _missions:
         raise KeyError(f"No mission with ID {mission_id}.")
@@ -115,11 +113,19 @@ def start_mission(mission_id: int) -> dict:
     if not mission["assigned_crew"]:
         raise ValueError("Cannot start a mission with no crew assigned.")
 
-    # Check all required roles exist somewhere in the crew
+    # Check all required roles exist in the crew
     for role in mission["required_roles"]:
         if not crew_management.role_exists_in_crew(role):
             raise ValueError(
                 f"Cannot start mission — no crew member with role '{role}' exists."
+            )
+
+    # Business rule: repair mission requires at least one damaged car
+    if mission["type"] == "repair":
+        damaged_cars = inventory.get_damaged_cars()
+        if not damaged_cars:
+            raise ValueError(
+                "Cannot start repair mission — no damaged cars in inventory."
             )
 
     mission["status"] = "ongoing"
