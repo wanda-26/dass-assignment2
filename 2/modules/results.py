@@ -2,6 +2,7 @@
 Results Module
 Records race outcomes, updates driver rankings and adds prize money to inventory.
 Prize split: 1st = 60%, 2nd = 30%, 3rd = 10%.
+Also records which cars were damaged during the race.
 Depends on: race_management, inventory.
 """
 
@@ -10,7 +11,7 @@ from modules import race_management, inventory
 # Rankings: {driver_id: {"wins": int, "races": int, "earnings": int}}
 _rankings: dict = {}
 
-# Results: {race_id: {"winner_id": int, "placements": [driver_id, ...]}}
+# Results: {race_id: {"winner_id": int, "placements": list, "damaged_cars": list}}
 _results: dict = {}
 
 
@@ -20,14 +21,18 @@ def _ensure_ranking(driver_id: int) -> None:
         _rankings[driver_id] = {"wins": 0, "races": 0, "earnings": 0}
 
 
-def record_result(race_id: int, placements: list) -> dict:
+def record_result(race_id: int, placements: list, damaged_car_ids: list = None) -> dict:
     """
     Record the finishing order of a race.
     - placements: list of driver_ids in finishing order (1st place first).
+    - damaged_car_ids: list of car IDs damaged during the race (optional).
     - Updates driver rankings and adds prize money to inventory cash.
+    - Marks damaged cars in inventory.
     - Marks race as completed.
-    Raises ValueError if race is not ongoing or placements are invalid.
     """
+    if damaged_car_ids is None:
+        damaged_car_ids = []
+
     race = race_management.get_race(race_id)
 
     if race["status"] != "ongoing":
@@ -41,6 +46,12 @@ def record_result(race_id: int, placements: list) -> dict:
     for driver_id in placements:
         if driver_id not in entered_driver_ids:
             raise ValueError(f"Driver ID {driver_id} was not entered in this race.")
+
+    # Validate damaged cars were in the race
+    entered_car_ids = [e["car_id"] for e in race["entries"]]
+    for car_id in damaged_car_ids:
+        if car_id not in entered_car_ids:
+            raise ValueError(f"Car ID {car_id} was not entered in this race.")
 
     # Prize money split
     prize = race["prize_money"]
@@ -56,11 +67,16 @@ def record_result(race_id: int, placements: list) -> dict:
             _rankings[driver_id]["earnings"] += earned
             inventory.add_cash(earned)
 
+    # Mark damaged cars in inventory
+    for car_id in damaged_car_ids:
+        inventory.update_car_condition(car_id, "damaged")
+
     # Store result
     result_record = {
         "race_id": race_id,
         "placements": placements,
         "winner_id": placements[0],
+        "damaged_cars": damaged_car_ids,
     }
     _results[race_id] = result_record
 
