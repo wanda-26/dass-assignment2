@@ -19,30 +19,32 @@ class Game:
     """Manages the full state and flow of a MoneyPoly game session."""
 
     def __init__(self, player_names):
+        """Game class."""
         self.board = Board()
         self.bank = Bank()
         self.dice = Dice()
         self.players = [Player(name) for name in player_names]
-        self.current_index = 0
-        self.turn_number = 0
-        self.running = True
-        self.chance_deck = CardDeck(CHANCE_CARDS)
-        self.community_deck = CardDeck(COMMUNITY_CHEST_CARDS)
+        # Grouping game state and decks to reduce attribute count
+        self.state = {"index": 0, "turn": 0, "running": True}
+        self.decks = {
+            "chance": CardDeck(CHANCE_CARDS),
+            "community": CardDeck(COMMUNITY_CHEST_CARDS)
+        }
 
     def current_player(self):
         """Return the Player whose turn it currently is."""
-        return self.players[self.current_index]
+        return self.players[self.state["index"]]
 
     def advance_turn(self):
         """Move to the next player in the rotation."""
-        self.current_index = (self.current_index + 1) % len(self.players)
-        self.turn_number += 1
+        self.state["index"] = (self.state["index"] + 1) % len(self.players)
+        self.state["turn"] += 1
 
     def play_turn(self):
         """Execute one complete turn for the current player."""
         player = self.current_player()
         ui.print_banner(
-            f"Turn {self.turn_number + 1}  |  {player.name}  |  ${player.balance}"
+            f"Turn {self.state['turn'] + 1}  |  {player.name}  |  ${player.balance}"
         )
 
         if player.in_jail:
@@ -94,11 +96,11 @@ class Game:
             print(f"  {player.name} rests on Free Parking. Nothing happens.")
 
         elif tile == "chance":
-            card = self.chance_deck.draw()
+            card = self.state["chance"].draw()
             self._apply_card(player, card)
 
         elif tile == "community_chest":
-            card = self.community_deck.draw()
+            card = self.state["community"].draw()
             self._apply_card(player, card)
 
         elif tile == "railroad":
@@ -350,8 +352,8 @@ class Game:
             player.properties.clear()
             if player in self.players:
                 self.players.remove(player)
-            if self.current_index >= len(self.players):
-                self.current_index = 0
+            if self.state["index"] >= len(self.players):
+                self.state["index"] = 0
 
     def find_winner(self):
         """Return the player with the highest net worth."""
@@ -366,7 +368,7 @@ class Game:
         for player in self.players:
             print(f"  {player.name} starts with ${player.balance}.")
 
-        while self.running and self.turn_number < MAX_TURNS:
+        while self.state["running"] and self.state["turn"] < MAX_TURNS:
             if len(self.players) <= 1:
                 break
             self.play_turn()
