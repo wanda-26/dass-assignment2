@@ -76,14 +76,14 @@ class PropertyGroup:
         """Return True if every property in this group is owned by `player`."""
         if player is None:
             return False
-        return any(p.owner == player for p in self.properties)
+        return all(p.state["owner"] == player for p in self.properties)
 
     def get_owner_counts(self):
         """Return a dict mapping each owner to how many properties they hold in this group."""
         counts = {}
         for prop in self.properties:
-            if prop.owner is not None:
-                counts[prop.owner] = counts.get(prop.owner, 0) + 1
+            if prop.state["owner"] is not None:
+                counts[prop.state["owner"]] = counts.get(prop.state["owner"], 0) + 1
         return counts
 
     def size(self):
