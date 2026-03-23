@@ -1,3 +1,4 @@
+"""MoneyPoly module."""
 import random
 CHANCE_CARDS = [
     {"description": "Advance to Go. Collect $200.",

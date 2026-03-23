@@ -1,3 +1,4 @@
+"""MoneyPoly module."""
 class Property:
     """Represents a single purchasable property tile on the MoneyPoly board."""
 
@@ -47,7 +48,6 @@ class Property:
         """
         if not self.is_mortgaged:
             return 0
-        
         cost = int(self.mortgage_value * 1.1)
         self.is_mortgaged = False
         return cost
@@ -62,6 +62,7 @@ class Property:
 
 
 class PropertyGroup:
+    """PropertyGroup class."""
     def __init__(self, name, color):
         self.name = name
         self.color = color
