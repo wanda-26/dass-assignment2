@@ -8,7 +8,10 @@ import pytest
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+code_dir = os.path.join(project_root, 'code')
+sys.path.insert(0, code_dir)
 
 from modules import (
     registration,

@@ -77,7 +77,9 @@ def remove_car(car_id: int) -> None:
         raise KeyError(f"No car with ID {car_id}.")
     del _cars[car_id]
 
-
+def get_damaged_cars() -> list:
+    """Return all cars in inventory that currently have the 'damaged' condition."""
+    return [dict(c) for c in _cars.values() if c["condition"] == "damaged"]
 # ── Spare Parts ────────────────────────────────────────────────────────────────
 
 def add_spare_part(part_name: str, quantity: int) -> None:

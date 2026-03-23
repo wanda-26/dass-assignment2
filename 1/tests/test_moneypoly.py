@@ -7,15 +7,18 @@ Coverage targets
 * Key variable states (zero, negative, boundary, large)
 * Edge cases: empty collections, exact boundaries, wrap-around
 
-Run with:  python3 -m unittest test_moneypoly -v
+Run with:  python3 -m unittest tests.test_moneypoly -v
 """
 
 import sys
+import os
 import unittest
 from unittest.mock import patch
 
-sys.path.insert(0, ".")
-
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+code_dir = os.path.join(base_dir, 'code')
+if code_dir not in sys.path:
+    sys.path.insert(0, code_dir)
 
 # ===========================================================================
 # 1. DICE
