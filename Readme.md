@@ -1,6 +1,7 @@
 github link: https://github.com/wanda-26/dass-assignment2
 
-google drive link: 
+google drive link: https://drive.google.com/file/d/1x24GNWY7gbLS7qZDgFcTXncFdFDh7ed4/view?usp=sharing
+
 
 how to run:
 
