@@ -20,7 +20,7 @@ def print_player_card(player):
     if player.properties:
         print("  Properties:")
         for prop in player.properties:
-            tag = " [MORTGAGED]" if prop.is_mortgaged else ""
+            tag = " [MORTGAGED]" if prop.state["is_mortgaged"] else ""
             print(f"    {prop.name:<32} rent ${prop.get_rent()}{tag}")
     else:
         print("  Properties: none")
@@ -46,8 +46,8 @@ def print_board_ownership(board):
     print(f"  {'Pos':>3}  {'Property':<32}  {'Price':>5}  {'Rent':>4}  Owner")
     print("  " + "-" * 64)
     for prop in board.properties:
-        owner = prop.owner.name if prop.owner else "---"
-        mortgage_flag = "*" if prop.is_mortgaged else " "
+        owner = prop.state["owner"].name if prop.state["owner"] else "---"
+        mortgage_flag = "*" if prop.state["is_mortgaged"] else " "
         print(
             f"  {prop.position:>3}  {prop.name:<32}  "
             f"${prop.price:>4}  ${prop.get_rent():>3}  "
