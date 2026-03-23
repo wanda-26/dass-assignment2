@@ -72,7 +72,7 @@ class Game:
         self.advance_turn()
 
     def _move_and_resolve(self, player, steps):
-        """Move `player` by `steps` and trigger whatever tile they land on."""
+        """Move player and resolve."""
         player.move(steps)
         position = player.position
         tile = self.board.get_tile_type(position)
@@ -81,40 +81,31 @@ class Game:
         if tile == "go_to_jail":
             player.go_to_jail()
             print(f"  {player.name} has been sent to Jail!")
+        elif tile in ("property", "railroad"):
+            prop = self.board.get_property_at(position)
+            if prop is not None:
+                self._handle_property_tile(player, prop)
+        else:
+            self._handle_special_tile(player, tile)
 
-        elif tile == "income_tax":
+        self._check_bankruptcy(player)
+
+    def _handle_special_tile(self, player, tile):
+        """Helper to process special tiles and reduce branch cyclomatic complexity."""
+        if tile == "income_tax":
             player.deduct_money(INCOME_TAX_AMOUNT)
             self.bank.collect(INCOME_TAX_AMOUNT)
             print(f"  {player.name} paid income tax: ${INCOME_TAX_AMOUNT}.")
-
         elif tile == "luxury_tax":
             player.deduct_money(LUXURY_TAX_AMOUNT)
             self.bank.collect(LUXURY_TAX_AMOUNT)
             print(f"  {player.name} paid luxury tax: ${LUXURY_TAX_AMOUNT}.")
-
+        elif tile == "chance":
+            self._apply_card(player, self.decks["chance"].draw())
+        elif tile == "community_chest":
+            self._apply_card(player, self.decks["community"].draw())
         elif tile == "free_parking":
             print(f"  {player.name} rests on Free Parking. Nothing happens.")
-
-        elif tile == "chance":
-            card = self.state["chance"].draw()
-            self._apply_card(player, card)
-
-        elif tile == "community_chest":
-            card = self.state["community"].draw()
-            self._apply_card(player, card)
-
-        elif tile == "railroad":
-            prop = self.board.get_property_at(position)
-            if prop is not None:
-                self._handle_property_tile(player, prop)
-
-        elif tile == "property":
-            prop = self.board.get_property_at(position)
-            if prop is not None:
-                self._handle_property_tile(player, prop)
-
-        self._check_bankruptcy(player)
-
 
     def _handle_property_tile(self, player, prop):
         """Decide what to do when `player` lands on a property tile."""
