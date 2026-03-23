@@ -399,17 +399,17 @@ class Game:
 
             if choice == 0:
                 break
-            elif choice == 1:
+            if choice == 1:
                 ui.print_standings(self.players)
-            elif choice == 2:
+            if choice == 2:
                 ui.print_board_ownership(self.board)
-            elif choice == 3:
+            if choice == 3:
                 self._menu_mortgage(player)
-            elif choice == 4:
+            if choice == 4:
                 self._menu_unmortgage(player)
-            elif choice == 5:
+            if choice == 5:
                 self._menu_trade(player)
-            elif choice == 6:
+            if choice == 6:
                 amount = ui.safe_int_input("  Loan amount: ", default=0)
                 if amount > 0:
                     self.bank.give_loan(player, amount)
@@ -445,10 +445,10 @@ class Game:
         if not others:
             print("  No other players to trade with.")
             return
-        for i, player in enumerate(others):
-            print(f"  {i + 1}. {player.name}  (${player.balance})")
+        for i, other in enumerate(others):
+            print(f"  {i + 1}. {other.name}  (${other.balance})")
         idx = ui.safe_int_input("  Trade with: ", default=0) - 1
-        if not (0 <= idx < len(others)):
+        if not 0 <= idx < len(others):
             return
         partner = others[idx]
         if not player.properties:
